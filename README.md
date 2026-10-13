@@ -1,173 +1,148 @@
-# Gestión de Emergencias SSR
+# Sistema de Gestión de Emergencias SSR
 
-Aplicación web de la Dirección de Obras Hidráulicas para registrar y seguir
-emergencias de los Sistemas Sanitarios Rurales de La Araucanía.
+**Dirección de Obras Hidráulicas (DOH)**  
+**Subdirección Regional de Servicios Sanitarios Rurales – Región de La Araucanía**
 
-## Publicación
+## 1. Descripción general
 
-El repositorio conserva la versión de Sites como respaldo y agrega una salida
-estática para GitHub Pages. El flujo `.github/workflows/deploy-pages.yml`
-compila y publica automáticamente la aplicación cuando cambia la rama `main`.
+El Sistema de Gestión de Emergencias SSR es una plataforma informática desarrollada para apoyar el registro, seguimiento, coordinación y análisis de emergencias que afectan a los Sistemas Sanitarios Rurales (SSR) de la Región de La Araucanía.
 
-```bash
-npm ci
-npm run build:github
-```
+Su objetivo es centralizar la información operacional, facilitar el seguimiento de las contingencias y disponer de antecedentes actualizados para la toma de decisiones.
 
-La salida se genera en `github-pages-dist/`. Para ejecutar localmente la
-variante de GitHub Pages:
+La aplicación funciona mediante un navegador web y permite que usuarios autorizados accedan a la información desde distintos dispositivos con conexión a Internet.
 
-```bash
-npm run dev:github
-```
+## 2. Funcionamiento del sistema
 
-## Arquitectura y seguridad
+La plataforma organiza la gestión de emergencias en un proceso que comprende el registro inicial, seguimiento, actualización de antecedentes, resolución y generación de informes.
 
-- GitHub Pages aloja únicamente la interfaz pública de inicio de sesión.
-- Supabase Auth administra las cuentas y sesiones.
-- Las tablas y fotografías permanecen protegidas por RLS y almacenamiento
-  privado.
-- Las operaciones administrativas y los correos Gmail se ejecutan en Edge
-  Functions, donde permanecen las credenciales privadas.
-- El código del navegador contiene solo la clave publicable de Supabase, que
-  está diseñada para clientes públicos y no reemplaza la autorización RLS.
-- No deben agregarse al repositorio claves `sb_secret_`, `service_role`,
-  contraseñas, secretos OAuth ni refresh tokens.
+### Registro de emergencias
 
-La aplicación utiliza `America/Santiago` para los informes y registros
-visibles. Los horarios 09:00, 12:00, 15:00 y 19:00 son referencias internas;
-los informes pueden emitirse en cualquier momento.
+Permite ingresar nuevas incidencias asociadas a un SSR, incorporando antecedentes como:
 
-## Versión Sites de respaldo
+- Identificación del sistema sanitario rural y comuna.
+- Tipo de emergencia y nivel de prioridad.
+- Descripción de la situación.
+- Estado del abastecimiento de agua y suministro eléctrico.
+- Número de arranques afectados.
+- Fecha, ubicación y antecedentes complementarios.
+- Fotografías y documentación de respaldo.
 
-La configuración original de Sites se conserva en `.openai/hosting.json` y
-continúa desplegada mientras se valida la versión externa.
+### Seguimiento y control
 
-## Base técnica original
+Cada emergencia dispone de un registro individual que permite incorporar actualizaciones, observaciones y antecedentes sobre las medidas adoptadas.
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+Los eventos pueden clasificarse según su estado de avance: reportado, en revisión, en gestión, en monitoreo, resuelto o cerrado.
 
-## Prerequisites
+El sistema conserva un historial de las actuaciones registradas, permitiendo consultar la evolución de cada emergencia y los usuarios que intervinieron.
 
-- Node.js `>=22.13.0`
-- Linux with `flock`, `curl`, and GNU `timeout`
+### Generación de informes
 
-## Sites Lifecycle
+La plataforma permite elaborar informes individuales y consolidados de situación, utilizando los antecedentes disponibles al momento de su emisión.
 
-The Sites lifecycle CLI runs the locked dependency install before returning this checkout. Edit the source under `app/`, then checkpoint when a coherent milestone is ready to inspect or share. The remote Sites builder runs `npm run build` against the pushed commit. Do not repeat install or build as a normal pre-checkpoint step.
+Entre sus funcionalidades se incluyen la generación de documentos PDF, exportación de información en formato CSV y conservación de registros históricos de informes.
 
-This starter does not use `wrangler.jsonc`.
+### Notificaciones
 
-`install:ci` is intentionally a single, non-retrying `npm ci`. It refuses a concurrent install for the same project, consumes a matching image-seeded npm cache with `--prefer-offline` while retaining registry fallback for a missing cache object, otherwise downloads and verifies the complete vinext tarball recorded in `package-lock.json`, limits npm to one socket, and terminates a stalled install. `build` applies a short timeout and then validates the Sites artifact. These helpers target Linux and use GNU `timeout`; they are not native macOS scripts.
+El sistema contempla notificaciones por correo electrónico para informar eventos relevantes, tales como el ingreso y resolución de emergencias.
 
-Scripts that need writable project-scoped home, npm, XDG, and temporary paths use `scripts/sites-env.sh`. The `dev` and `start` scripts honor the caller's runtime environment and keep Wrangler logs inside the checkout. The generated `.sites-runtime/` directory is disposable and ignored by Git.
+### Administración de usuarios
 
-## Included Shape
+El acceso está organizado mediante tres perfiles:
 
-- edit site code under `app/`
-- `app/chatgpt-auth.ts` provides optional dispatch-owned ChatGPT sign-in helpers
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/index.ts` reads the D1 binding from the Cloudflare Worker environment
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
+- **Administrador:** gestión de usuarios, configuración, seguimiento y resolución de emergencias.
+- **Reportante:** registro de nuevas emergencias y actualización de antecedentes dentro de los permisos establecidos.
+- **Visualizador:** consulta de información sin facultades de modificación.
 
-## Gmail Notifications
+## 3. Lenguajes de programación y tecnologías
 
-The application sends incident, resolution, invitation, and connection-test
-emails through the Gmail API. Copy `.env.example` to a local untracked
-environment file, or configure the same values as protected runtime variables
-in the hosting environment:
+La aplicación utiliza tecnologías de desarrollo web que permiten separar la interfaz de usuario, la gestión de datos y los servicios de autenticación.
 
-- `GOOGLE_CLIENT_ID`: OAuth 2.0 web client ID
-- `GOOGLE_CLIENT_SECRET`: OAuth 2.0 web client secret
-- `GMAIL_REFRESH_TOKEN`: offline refresh token authorized by the sender
-- `GMAIL_SENDER_EMAIL`: sender address, currently
-  `emergenciasdoh@gmail.com`
-- `ALERT_EMAIL_TO`: operational notification recipient, currently
-  `marcelo.ulloa@mop.gov.cl`
+| Tecnología | Función |
+|---|---|
+| **TypeScript** | Lenguaje principal para la lógica de la aplicación, validación y manejo de datos. |
+| **JavaScript** | Ejecución de funcionalidades e interacciones en el navegador. |
+| **HTML5** | Estructura y presentación del contenido web. |
+| **CSS3** | Diseño visual, distribución y adaptación de la interfaz a distintos dispositivos. |
+| **React** | Biblioteca para construir los componentes interactivos de la plataforma. |
+| **Vite** | Herramienta para desarrollo y compilación de la aplicación web. |
+| **SQL / PostgreSQL** | Tecnología de base de datos utilizada por Supabase para almacenar y consultar información. |
 
-Never commit the client secret or refresh token. The application exchanges the
-refresh token server-side, sends MIME messages through
-`users.messages.send`, and exposes only connection state and delivery results
-to the administration panel.
+Se utiliza también la biblioteca jsPDF para la generación de informes descargables en formato PDF.
 
-## Workspace Auth Headers
+## 4. Plataformas y servicios integrados
 
-OpenAI workspace sites can read the current user's email from
-`oai-authenticated-user-email`.
+### GitHub
 
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
+Plataforma utilizada para almacenar y administrar el código fuente, mantener un historial de modificaciones y controlar las versiones del proyecto.
 
-Treat the full name as optional and fall back to email when it is absent:
+Permite desarrollar mejoras, revisar cambios y conservar los antecedentes de evolución del sistema.
 
-```tsx
-import { headers } from "next/headers";
+### GitHub Pages
 
-export default async function Home() {
-  const requestHeaders = await headers();
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
+Servicio de alojamiento web encargado de publicar la interfaz de la aplicación.
 
-  const displayName = fullName ?? email;
-  // ...
-}
-```
+La publicación se realiza mediante un flujo automatizado de GitHub Actions que compila el proyecto al actualizar la rama principal del repositorio.
 
-## Optional Dispatch-Owned ChatGPT Sign-In
+GitHub Pages publica la aplicación, pero no constituye la base de datos de las emergencias.
 
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
+### Supabase
 
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
+Plataforma utilizada para administrar los servicios de datos y autenticación.
 
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
+Sus componentes comprenden:
 
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
+- **PostgreSQL:** almacenamiento de los registros de emergencias, sistemas SSR, usuarios, seguimientos e informes.
+- **Supabase Auth:** autenticación y administración de sesiones de usuarios.
+- **Supabase Storage:** almacenamiento de fotografías y archivos asociados a los registros.
+- **Row Level Security (RLS):** políticas de autorización para controlar el acceso a los datos.
+- **Edge Functions:** ejecución de operaciones específicas que requieren procesamiento protegido en el servidor.
 
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
+### Gmail API
 
-## Diagnostic Commands
+Servicio integrado para el envío de notificaciones por correo electrónico, asociado a los eventos operacionales y administrativos contemplados por la plataforma.
 
-- `npm run install:ci`: perform the one bounded lockfile install
-- `npm run dev`: start the Vite/Vinext development server
-- `npm run build`: build and validate the deployable Sites artifact
-- `npm run start`: start the built Vinext application
-- `npm test`: build, validate, and verify the rendered development-preview metadata
-- `npm run validate:artifact`: recheck an existing artifact's manifest and ESM `default.fetch` export
-- `npm run db:generate`: generate Drizzle migrations after schema changes
+## 5. Arquitectura general
 
-Use build and validation commands for targeted diagnosis after a remote failure, not as part of the normal checkpoint path.
+El funcionamiento se organiza en tres componentes principales:
 
-The timeout defaults can be overridden for a controlled canary with `SITES_INSTALL_TIMEOUT`, `SITES_INSTALL_KILL_AFTER`, `SITES_BUILD_TIMEOUT`, and `SITES_BUILD_KILL_AFTER`. A timeout fails the command; the helpers never retry an unchanged install or build.
+**Interfaz web:** desarrollada con React y TypeScript. Permite registrar, consultar y administrar la información desde un navegador.
 
-## Learn More
+**Servicios de datos:** proporcionados por Supabase, responsable de gestionar los registros, la autenticación, el almacenamiento de archivos y los controles de acceso.
 
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+**Publicación e integración:** GitHub Pages permite el acceso a la aplicación, mientras que los servicios de notificación se integran mediante funciones de servidor y Gmail API.
+
+En términos generales, el usuario interactúa con la plataforma a través de su navegador. Las operaciones autorizadas se comunican con Supabase, donde se almacenan y recuperan los antecedentes. Los informes se elaboran a partir de la información disponible y las notificaciones se gestionan mediante los servicios integrados.
+
+## 6. Seguridad de la información
+
+La aplicación utiliza autenticación individual y distintos niveles de autorización para controlar el acceso a sus funcionalidades.
+
+Los registros operacionales y archivos asociados se administran mediante los servicios de Supabase y sus mecanismos de seguridad.
+
+Las contraseñas, credenciales privadas y claves administrativas no deben incorporarse al código fuente público. Las operaciones que requieren privilegios elevados deben ejecutarse mediante servicios protegidos y verificaciones de autorización.
+
+## 7. Instalación y desarrollo
+
+El proyecto requiere Node.js versión 22.13.0 o superior y el administrador de paquetes npm.
+
+Para trabajar con una copia local del repositorio se utilizan los siguientes comandos:
+
+| Comando | Descripción |
+|---|---|
+| `npm ci` | Instala las dependencias del proyecto. |
+| `npm run dev:github` | Inicia el entorno local de desarrollo. |
+| `npm run typecheck:github` | Verifica los tipos de TypeScript. |
+| `npm run build:github` | Compila la aplicación para su publicación. |
+
+Las configuraciones de servicios externos y las credenciales necesarias deben mantenerse en entornos protegidos.
+
+## 8. Alcance del sistema
+
+La plataforma constituye una herramienta de apoyo a la gestión operacional de emergencias en los Sistemas Sanitarios Rurales de La Araucanía.
+
+Su información permite disponer de antecedentes consolidados, mejorar la trazabilidad de las actuaciones y facilitar la elaboración de reportes de situación para los procesos de coordinación y toma de decisiones.
+
+Los registros reflejan los antecedentes ingresados y actualizados por los usuarios autorizados, por lo que su calidad y oportunidad dependen de la información disponible.
+
+---
+
