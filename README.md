@@ -1,8 +1,4 @@
 # Sistema de Gestión de Emergencias SSR
-
-**Dirección de Obras Hidráulicas (DOH)**  
-**Subdirección Regional de Servicios Sanitarios Rurales – Región de La Araucanía**
-
 ## 1. Descripción general
 
 El Sistema de Gestión de Emergencias SSR es una plataforma informática desarrollada para apoyar el registro, seguimiento, coordinación y análisis de emergencias que afectan a los Sistemas Sanitarios Rurales (SSR) de la Región de La Araucanía.
